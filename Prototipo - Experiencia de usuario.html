@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tu Café | Café El Carrizal</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          },
+          colors: {
+            coffee: {
+              950: '#1E120B',
+              900: '#2C1A10',
+              800: '#432818',
+              700: '#5C3A21',
+              600: '#7F4F24',
+              500: '#9C6644',
+              200: '#E6CCB2',
+              100: '#F5EBE0',
+              50: '#FAF6F0',
+            },
+            cafetal: {
+              700: '#23422A',
+              600: '#2D5A37',
+              500: '#3D7A4A',
+              100: '#E6F0E8',
+            },
+            whatsapp: {
+              600: '#1EBE5D',
+              500: '#25D366',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Transiciones suaves entre pantallas */
+    .screen-enter {
+      animation: fadeSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulseCoffee {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.06); opacity: 0.85; }
+    }
+    .animate-coffee {
+      animation: pulseCoffee 1.2s ease-in-out infinite;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="bg-coffee-100/70 text-coffee-950 min-h-screen flex flex-col items-center justify-center p-0 sm:p-6 selection:bg-coffee-200">
+
+  <!-- Contenedor Principal Mobile-First -->
+  <main class="w-full max-w-md bg-coffee-50 min-h-screen sm:min-h-[740px] sm:max-h-[820px] sm:rounded-[2.25rem] shadow-xl sm:shadow-2xl overflow-hidden flex flex-col relative border-0 sm:border border-coffee-200/80">
+
+    <!-- Header de Marca y Progreso -->
+    <header id="app-header" class="bg-coffee-50/95 backdrop-blur-sm px-6 pt-5 pb-3.5 border-b border-coffee-200/60 sticky top-0 z-20 transition-all">
+      <div class="flex items-center justify-between">
+        <!-- Botón Atrás -->
+        <button id="btn-back" onclick="prevStep()" aria-label="Volver al paso anterior"
+          class="hidden p-2 -ml-2 rounded-xl text-coffee-800 hover:bg-coffee-200/50 active:scale-95 transition flex items-center gap-1 text-sm font-medium cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          <span>Atrás</span>
+        </button>
+
+        <!-- Identidad Visual Café El Carrizal -->
+        <div id="brand-logo" class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-coffee-800 flex items-center justify-center text-coffee-50 shadow-xs">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C7.58 2 4 6.03 4 11c0 4.97 3.58 9 8 9s8-4.03 8-9c0-4.97-3.58-9-8-9zm0 16c-3.31 0-6-3.13-6-7 0-2.61 1.25-4.88 3.1-6.06-.42 1.83-.14 4.19 1.25 6.06 1.56 2.1 1.85 4.46 1.35 6.96.1.03.2.04.3.04zm2.9-.94c.42-1.83.14-4.19-1.25-6.06-1.56-2.1-1.85-4.46-1.35-6.96-.1-.03-.2-.04-.3-.04 3.31 0 6 3.13 6 7 0 2.61-1.25 4.88-3.1 6.06z"/>
+            </svg>
+          </div>
+          <div>
+            <span class="block text-[10px] font-semibold uppercase tracking-[0.18em] text-cafetal-600 leading-none">Café El Carrizal</span>
+            <span class="font-serif font-bold text-lg text-coffee-900 leading-tight">Tu Café</span>
+          </div>
+        </div>
+
+        <!-- Indicador de Paso -->
+        <span id="step-counter" class="hidden text-xs font-semibold bg-coffee-200/60 text-coffee-900 px-3 py-1 rounded-full">
+          1 de 4
+        </span>
+      </div>
+
+      <!-- Barra de Progreso Limpia -->
+      <div id="progress-container" class="hidden mt-3.5 w-full bg-coffee-200/50 h-1.5 rounded-full overflow-hidden">
+        <div id="progress-bar" class="bg-cafetal-600 h-full rounded-full transition-all duration-300 ease-out" style="width: 25%"></div>
+      </div>
+    </header>
+
+    <!-- ÁREA DINÁMICA DE CONTENIDO -->
+    <div id="screen-container" class="flex-1 overflow-y-auto no-scrollbar px-6 py-6 flex flex-col justify-between">
+      <!-- Renderizado dinámico -->
+    </div>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 1. CUESTIONARIO DE PREFERENCIAS Y CATÁLOGO DE CAFÉ EL CARRIZAL
+    // =========================================================================
+    const QUESTIONS = [
+      {
+        id: 'intensidad',
+        step: 1,
+        title: '¿Qué intensidad prefieres en tu taza?',
+        subtitle: 'Definiremos el punto de tueste ideal para tu paladar.',
+        options: [
+          {
+            value: 'suave',
+            label: 'Suave y aromático',
+            desc: 'Tueste claro, acidez brillante y delicada',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>`
+          },
+          {
+            value: 'medio',
+            label: 'Balanceado y medio',
+            desc: 'Equilibrio entre dulzor natural, cuerpo y aroma',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>`
+          },
+          {
+            value: 'intenso',
+            label: 'Intenso y con cuerpo',
+            desc: 'Tueste medio-oscuro, sabor profundo y persistente',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>`
+          }
+        ]
+      },
+      {
+        id: 'notas',
+        step: 2,
+        title: '¿Qué notas de sabor disfrutas más?',
+        subtitle: 'Nuestros micro-lotes de altura desarrollan perfiles únicos.',
+        options: [
+          {
+            value: 'chocolate',
+            label: 'Chocolate y nueces',
+            desc: 'Clásico, reconfortante, ideal solo o con leche',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`
+          },
+          {
+            value: 'frutal',
+            label: 'Frutal y cítrico',
+            desc: 'Refrescante, con notas a naranja dulce y flores',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>`
+          },
+          {
+            value: 'caramelo',
+            label: 'Caramelo y tapa de dulce',
+            desc: 'Dulzor natural acaramelado sin necesidad de azúcar',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>`
+          }
+        ]
+      },
+      {
+        id: 'metodo',
+        step: 3,
+        title: '¿Cómo preparas tu café en casa?',
+        subtitle: 'Ajustaremos el molido exacto para tu método.',
+        options: [
+          {
+            value: 'chorreador',
+            label: 'Chorreador tradicional',
+            desc: 'El clásico costarricense de bolsa de tela',
+            grind: 'Molido Medio-Fino',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 4h12M8 4v5a4 4 0 008 0V4M7 18h10a2 2 0 002-2v-1H5v1a2 2 0 002 2z"/></svg>`
+          },
+          {
+            value: 'prensa',
+            label: 'Prensa francesa',
+            desc: 'Inmersión lenta con cuerpo y aceites naturales',
+            grind: 'Molido Grueso',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 3h8M12 3v7m-5 0h10v9a2 2 0 01-2 2H9a2 2 0 01-2-2v-9z"/></svg>`
+          },
+          {
+            value: 'goteo',
+            label: 'Cafetera de goteo / V60',
+            desc: 'Filtro de papel, taza limpia y aromática',
+            grind: 'Molido Medio',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 4h14l-4 7v5l-6 3v-8L5 4z"/></svg>`
+          },
+          {
+            value: 'espresso',
+            label: 'Espresso / Cafetera Moka',
+            desc: 'Extracción concentrada, intensa y con crema',
+            grind: 'Molido Fino',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 11h12v4a4 4 0 01-4 4H8a4 4 0 01-4-4v-4zm12 1h2a2 2 0 012 2v1a2 2 0 01-2 2h-2M6 7h8"/></svg>`
+          }
+        ]
+      },
+      {
+        id: 'presentacion',
+        step: 4,
+        title: '¿Qué presentación prefieres?',
+        subtitle: 'Tostado fresco directo de nuestra finca hasta tu puerta.',
+        options: [
+          {
+            value: '340g',
+            label: 'Bolsa de 340g (Edición Personal)',
+            desc: 'Rinde aprox. 34 tazas · Frescura garantizada',
+            priceCRC: '₡4,800',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`
+          },
+          {
+            value: '500g',
+            label: 'Bolsa de 500g (Cosecha Clásica)',
+            desc: 'Rinde aprox. 50 tazas · La favorita de nuestros clientes',
+            priceCRC: '₡6,000',
+            popular: true,
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>`
+          },
+          {
+            value: '1kg',
+            label: 'Bolsa de 1 kg (Familiar / Oficina)',
+            desc: 'Rinde aprox. 100 tazas · Máximo rendimiento',
+            priceCRC: '₡11,000',
+            icon: `<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>`
+          }
+        ]
+      }
+    ];
+
+    const COFFEE_CATALOG = {
+      geisha: {
+        name: 'Geisha Altura',
+        subtitle: 'Micro-lote de Reserva · 1,750 m.s.n.m.',
+        process: 'Proceso Honey Dorado',
+        notes: ['Flor de Azahar', 'Mandarina Dulce', 'Miel Silvestre'],
+        bagBase: '#1F3A26',
+        bagDark: '#142619',
+        bagAccent: '#D97706',
+        labelTag: 'EDICIÓN RESERVA',
+        description: 'Un café de altura aromático y delicado, con acidez cítrica brillante y notas florales limpias en cada taza.'
+      },
+      caturra: {
+        name: 'Caturra Selección',
+        subtitle: 'Cosecha Familiar · 1,600 m.s.n.m.',
+        process: 'Proceso Lavado Tradicional',
+        notes: ['Caramelo', 'Tapa de Dulce', 'Almendras Tostadas'],
+        bagBase: '#4A2C18',
+        bagDark: '#321D0F',
+        bagAccent: '#C27828',
+        labelTag: 'SELECCIÓN ESPECIAL',
+        description: 'El equilibrio emblemático de El Carrizal. Dulzor natural acaramelado y cuerpo sedoso para disfrutar todo el día.'
+      },
+      bourbon: {
+        name: 'Bourbon Rojo',
+        subtitle: 'Tueste Intenso · 1,650 m.s.n.m.',
+        process: 'Proceso Natural',
+        notes: ['Cacao Oscuro', 'Nuez Moscada', 'Avellana'],
+        bagBase: '#26150C',
+        bagDark: '#170C07',
+        bagAccent: '#B45309',
+        labelTag: 'CUERPO PROFUNDO',
+        description: 'De carácter robusto, baja acidez y aroma envolvente. Sus notas intensas a cacao puro conquistan los paladares exigentes.'
+      },
+      catuai: {
+        name: 'Catuaí Dorada',
+        subtitle: 'Cosecha Dorada · 1,550 m.s.n.m.',
+        process: 'Proceso Semi-Lavado',
+        notes: ['Chocolate con Leche', 'Panela', 'Frutos Rojos'],
+        bagBase: '#6B4220',
+        bagDark: '#4D2F16',
+        bagAccent: '#D97706',
+        labelTag: 'DULZOR NATURAL',
+        description: 'Versátil, amable y muy aromático. Combina el dulzor de la caña costarricense con un retrogusto achocolatado.'
+      }
+    };
+
+    // =========================================================================
+    // 2. ESTADO DE LA APLICACIÓN
+    // =========================================================================
+    let state = {
+      view: 'welcome', // 'welcome' | 'quiz' | 'loading' | 'result'
+      currentStep: 0,
+      answers: {
+        intensidad: null,
+        notas: null,
+        metodo: null,
+        presentacion: null
+      }
+    };
+
+    function startQuiz() {
+      state.view = 'quiz';
+      state.currentStep = 0;
+      state.answers = { intensidad: null, notas: null, metodo: null, presentacion: null };
+      render();
+    }
+
+    function selectOption(questionId, optionValue) {
+      state.answers[questionId] = optionValue;
+
+      setTimeout(() => {
+        if (state.currentStep < QUESTIONS.length - 1) {
+          state.currentStep++;
+          render();
+        } else {
+          state.view = 'loading';
+          render();
+
+          setTimeout(() => {
+            state.view = 'result';
+            render();
+          }, 950);
+        }
+      }, 160);
+    }
+
+    function prevStep() {
+      if (state.view === 'quiz' && state.currentStep > 0) {
+        state.currentStep--;
+        render();
+      } else if (state.view === 'quiz' && state.currentStep === 0) {
+        state.view = 'welcome';
+        render();
+      }
+    }
+
+    function resetFlow() {
+      startQuiz();
+    }
+
+    // =========================================================================
+    // 3. CÁLCULO DE RECOMENDACIÓN PERSONALIZADA
+    // =========================================================================
+    function computeRecommendation() {
+      const { intensidad, notas, metodo, presentacion } = state.answers;
+
+      let coffeeKey = 'caturra';
+      if (notas === 'frutal' || intensidad === 'suave') {
+        coffeeKey = 'geisha';
+      } else if (intensidad === 'intenso' || (notas === 'chocolate' && metodo === 'espresso')) {
+        coffeeKey = 'bourbon';
+      } else if (notas === 'chocolate') {
+        coffeeKey = 'catuai';
+      } else {
+        coffeeKey = 'caturra';
+      }
+
+      const coffee = COFFEE_CATALOG[coffeeKey];
+      const metodoObj = QUESTIONS[2].options.find(o => o.value === metodo) || QUESTIONS[2].options[0];
+      const presObj = QUESTIONS[3].options.find(o => o.value === presentacion) || QUESTIONS[3].options[1];
+
+      const message =
+        `Hola Café El Carrizal, me gustaría pedir mi café recomendado:\n` +
+        `• Variedad: ${coffee.name}\n` +
+        `• Presentación: ${presObj.label} (${presObj.priceCRC})\n` +
+        `• Molido: ${metodoObj.grind} (para ${metodoObj.label})`;
+
+      const whatsappUrl = `https://wa.me/50684867791?text=${encodeURIComponent(message)}`;
+
+      return {
+        coffee,
+        metodoLabel: metodoObj.label,
+        recommendedGrind: metodoObj.grind,
+        presentationLabel: presObj.label,
+        priceCRC: presObj.priceCRC,
+        whatsappUrl
+      };
+    }
+
+    // =========================================================================
+    // 4. RENDERIZADO DE VISTAS
+    // =========================================================================
+    function render() {
+      const container = document.getElementById('screen-container');
+      const btnBack = document.getElementById('btn-back');
+      const brandLogo = document.getElementById('brand-logo');
+      const stepCounter = document.getElementById('step-counter');
+      const progressContainer = document.getElementById('progress-container');
+      const progressBar = document.getElementById('progress-bar');
+
+      if (state.view === 'welcome') {
+        btnBack.classList.add('hidden');
+        brandLogo.classList.remove('hidden');
+        stepCounter.classList.add('hidden');
+        progressContainer.classList.add('hidden');
+        container.innerHTML = renderWelcomeScreen();
+      } else if (state.view === 'quiz') {
+        btnBack.classList.remove('hidden');
+        brandLogo.classList.add('hidden');
+        stepCounter.classList.remove('hidden');
+        progressContainer.classList.remove('hidden');
+
+        const stepNum = state.currentStep + 1;
+        stepCounter.textContent = `${stepNum} de ${QUESTIONS.length}`;
+        progressBar.style.width = `${(stepNum / QUESTIONS.length) * 100}%`;
+
+        container.innerHTML = renderQuizScreen(QUESTIONS[state.currentStep]);
+      } else if (state.view === 'loading') {
+        btnBack.classList.add('hidden');
+        brandLogo.classList.remove('hidden');
+        stepCounter.classList.add('hidden');
+        progressContainer.classList.remove('hidden');
+        progressBar.style.width = '100%';
+        container.innerHTML = renderLoadingScreen();
+      } else if (state.view === 'result') {
+        btnBack.classList.add('hidden');
+        brandLogo.classList.remove('hidden');
+        stepCounter.classList.add('hidden');
+        progressContainer.classList.add('hidden');
+        container.innerHTML = renderResultScreen();
+      }
+    }
+
+    function renderWelcomeScreen() {
+      return `
+        <div class="screen-enter flex flex-col justify-between h-full">
+          <div class="mt-1">
+            <span class="inline-block text-xs font-semibold text-cafetal-700 bg-cafetal-100 px-3 py-1 rounded-full mb-4">
+              Cosecha de Altura · Carrizal de Alajuela
+            </span>
+
+            <h1 class="font-serif text-[32px] font-bold text-coffee-950 leading-[1.15] mb-3.5">
+              Encuentra el café perfecto para tu <span class="text-coffee-600 italic">paladar.</span>
+            </h1>
+
+            <p class="text-sm text-coffee-800/85 leading-relaxed mb-6">
+              Responde 4 preguntas breves sobre tus gustos y forma de preparación. Seleccionaremos la variedad, el tueste y el molido ideal de nuestra finca.
+            </p>
+
+            <!-- Tarjeta Visual Editorial -->
+            <div class="bg-gradient-to-br from-coffee-800 to-coffee-950 rounded-3xl p-5 text-coffee-50 relative overflow-hidden shadow-lg mb-6">
+              <div class="relative z-10 flex items-center justify-between gap-4">
+                <div>
+                  <span class="text-[10px] uppercase tracking-[0.18em] text-coffee-200 font-semibold block mb-1">100% Café de Especialidad</span>
+                  <p class="font-serif text-lg font-semibold leading-snug text-white">Tostado fresco bajo pedido</p>
+                  <p class="text-xs text-coffee-200/90 mt-1">Directo de nuestra familia cafetalera a tu taza.</p>
+                </div>
+                <div class="w-14 h-14 rounded-2xl bg-coffee-700/60 border border-coffee-500/40 flex items-center justify-center shrink-0">
+                  <svg class="w-8 h-8 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm4-4v2m4-2v2m4-2v2"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="w-32 h-32 rounded-full bg-cafetal-600/20 absolute -bottom-12 -right-8"></div>
+            </div>
+
+            <!-- Beneficios Sencillos -->
+            <div class="grid grid-cols-3 gap-2.5 text-center mb-6">
+              <div class="bg-white p-3 rounded-2xl border border-coffee-200/70">
+                <span class="block text-sm font-bold text-coffee-900">4 pasos</span>
+                <span class="text-[11px] text-coffee-700 leading-tight block mt-0.5">Guía rápida</span>
+              </div>
+              <div class="bg-white p-3 rounded-2xl border border-coffee-200/70">
+                <span class="block text-sm font-bold text-coffee-900">A medida</span>
+                <span class="text-[11px] text-coffee-700 leading-tight block mt-0.5">Molido exacto</span>
+              </div>
+              <div class="bg-white p-3 rounded-2xl border border-coffee-200/70">
+                <span class="block text-sm font-bold text-coffee-900">Directo</span>
+                <span class="text-[11px] text-coffee-700 leading-tight block mt-0.5">Pedido fácil</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="startQuiz()"
+              class="w-full py-4 px-6 rounded-2xl bg-cafetal-600 hover:bg-cafetal-700 active:scale-[0.99] text-white font-semibold text-base shadow-lg shadow-cafetal-700/20 transition flex items-center justify-center gap-2 cursor-pointer">
+              <span>Descubrir mi café ideal</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderQuizScreen(question) {
+      const selectedVal = state.answers[question.id];
+
+      const optionsHTML = question.options.map(opt => {
+        const isSelected = selectedVal === opt.value;
+        return `
+          <button onclick="selectOption('${question.id}', '${opt.value}')"
+            class="w-full text-left p-4 rounded-2xl border-2 transition-all duration-150 flex items-center gap-3.5 cursor-pointer active:scale-[0.98]
+            ${isSelected
+              ? 'bg-coffee-800 border-coffee-800 text-white shadow-md'
+              : 'bg-white border-coffee-200/80 hover:border-coffee-500 text-coffee-950'}">
+            
+            <div class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors
+              ${isSelected ? 'bg-coffee-700 text-amber-300' : 'bg-coffee-100 text-coffee-800'}">
+              ${opt.icon}
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <span class="font-semibold text-sm sm:text-[15px] leading-snug">${opt.label}</span>
+                ${opt.popular ? `<span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${isSelected ? 'bg-amber-400 text-coffee-950' : 'bg-cafetal-100 text-cafetal-700'} shrink-0">Favorita</span>` : ''}
+                ${opt.priceCRC ? `<span class="text-xs font-bold ${isSelected ? 'text-amber-300' : 'text-cafetal-700'} shrink-0">${opt.priceCRC}</span>` : ''}
+              </div>
+              <p class="text-xs mt-0.5 leading-snug ${isSelected ? 'text-coffee-200' : 'text-coffee-700/80'}">
+                ${opt.desc}
+              </p>
+            </div>
+          </button>
+        `;
+      }).join('');
+
+      return `
+        <div class="screen-enter flex flex-col justify-between h-full">
+          <div>
+            <h2 class="font-serif text-2xl font-bold text-coffee-950 leading-snug mb-1.5">
+              ${question.title}
+            </h2>
+            <p class="text-xs sm:text-sm text-coffee-700/85 mb-5">
+              ${question.subtitle}
+            </p>
+
+            <div class="space-y-3">
+              ${optionsHTML}
+            </div>
+          </div>
+
+          <div class="pt-4"></div>
+        </div>
+      `;
+    }
+
+    function renderLoadingScreen() {
+      return `
+        <div class="screen-enter flex flex-col items-center justify-center h-full text-center py-12">
+          <div class="w-16 h-16 rounded-2xl bg-coffee-800 text-amber-300 flex items-center justify-center shadow-lg animate-coffee mb-5">
+            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C7.58 2 4 6.03 4 11c0 4.97 3.58 9 8 9s8-4.03 8-9c0-4.97-3.58-9-8-9zm0 16c-3.31 0-6-3.13-6-7 0-2.61 1.25-4.88 3.1-6.06-.42 1.83-.14 4.19 1.25 6.06 1.56 2.1 1.85 4.46 1.35 6.96.1.03.2.04.3.04zm2.9-.94c.42-1.83.14-4.19-1.25-6.06-1.56-2.1-1.85-4.46-1.35-6.96-.1-.03-.2-.04-.3-.04 3.31 0 6 3.13 6 7 0 2.61-1.25 4.88-3.1 6.06z"/>
+            </svg>
+          </div>
+          <h3 class="font-serif text-xl font-bold text-coffee-950 mb-1.5">Seleccionando tu cosecha...</h3>
+          <p class="text-xs text-coffee-700 max-w-[240px] leading-relaxed">
+            Buscando el perfil ideal de <strong>Café El Carrizal</strong> para tu taza.
+          </p>
+        </div>
+      `;
+    }
+
+    function renderResultScreen() {
+      const rec = computeRecommendation();
+      const { coffee, metodoLabel, recommendedGrind, presentationLabel, priceCRC, whatsappUrl } = rec;
+
+      const notesBadges = coffee.notes.map(note => `
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-coffee-100 text-coffee-900 border border-coffee-200/80">
+          ${note}
+        </span>
+      `).join('');
+
+      return `
+        <div class="screen-enter flex flex-col justify-between h-full">
+          <div>
+            <!-- Encabezado de Resultado -->
+            <div class="text-center mb-3.5">
+              <span class="text-[11px] font-semibold uppercase tracking-[0.15em] text-cafetal-600">Tu recomendación ideal</span>
+              <h2 class="font-serif text-[26px] font-bold text-coffee-950 leading-tight mt-0.5">${coffee.name}</h2>
+              <p class="text-xs text-coffee-700 mt-0.5">${coffee.subtitle} · ${coffee.process}</p>
+            </div>
+
+            <!-- Ficha Visual del Producto -->
+            <div class="bg-white rounded-3xl p-4 border border-coffee-200/90 shadow-md mb-4">
+              <!-- Tarjeta Superior con Ilustración SVG Realista del Empaque -->
+              <div class="rounded-2xl p-4 flex items-center gap-4 text-white relative overflow-hidden mb-4" style="background: linear-gradient(135deg, ${coffee.bagBase} 0%, ${coffee.bagDark} 100%);">
+                <!-- Bolsa Stand-Up Pouch de Café de Especialidad -->
+                <svg class="w-22 h-26 shrink-0 drop-shadow-lg" viewBox="0 0 96 116" fill="none">
+                  <!-- Sombra inferior de la bolsa -->
+                  <ellipse cx="48" cy="110" rx="30" ry="3.5" fill="rgba(0,0,0,0.35)"/>
+                  <!-- Fuelle lateral izquierdo y derecho -->
+                  <path d="M18 18L14 102C14 105.5 16.5 108 20 108H76C79.5 108 82 105.5 82 102L78 18H18Z" fill="${coffee.bagDark}"/>
+                  <!-- Cuerpo frontal de la bolsa Kraft/Mate -->
+                  <path d="M21 14L24 8H72L75 14L79 101C79 104.866 75.866 108 72 108H24C20.134 108 17 104.866 17 101L21 14Z" fill="#F5EBE0"/>
+                  <!-- Pliegue superior termosellado -->
+                  <path d="M21 14H75L74 21H22L21 14Z" fill="#E6CCB2"/>
+                  <line x1="22" y1="17.5" x2="74" y2="17.5" stroke="#C8A98B" stroke-width="1" stroke-dasharray="2 2"/>
+                  <!-- Válvula desgasificadora circular -->
+                  <circle cx="48" cy="28" r="3" fill="#D6C3B0" stroke="#B59E87" stroke-width="0.8"/>
+                  <!-- Etiqueta artesanal principal de Café El Carrizal -->
+                  <rect x="24" y="36" width="48" height="56" rx="5" fill="${coffee.bagBase}"/>
+                  <rect x="26.5" y="38.5" width="43" height="51" rx="3.5" stroke="${coffee.bagAccent}" stroke-width="0.9" stroke-opacity="0.75"/>
+                  <!-- Emblema de grano en la etiqueta -->
+                  <circle cx="48" cy="49" r="6" fill="#FAF6F0"/>
+                  <path d="M48 45C46 47 46 51 48 53M48 45C50 47 50 51 48 53" stroke="${coffee.bagBase}" stroke-width="1.2" stroke-linecap="round"/>
+                  <!-- Tipografía simulada en etiqueta -->
+                  <rect x="33" y="59" width="30" height="3.2" rx="1.6" fill="#FAF6F0"/>
+                  <rect x="37" y="65" width="22" height="2.2" rx="1.1" fill="#E6CCB2" fill-opacity="0.85"/>
+                  <!-- Banda inferior de variedad en etiqueta -->
+                  <rect x="30" y="74" width="36" height="9" rx="2.5" fill="${coffee.bagAccent}"/>
+                  <rect x="35" y="77.5" width="26" height="2" rx="1" fill="#FFFFFF"/>
+                </svg>
+
+                <div class="flex-1 min-w-0">
+                  <span class="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md bg-white/15 text-amber-200 mb-1.5">
+                    ${coffee.labelTag}
+                  </span>
+                  <p class="text-xs text-coffee-100 leading-relaxed">
+                    ${coffee.description}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Notas de Cata -->
+              <div class="mb-3.5">
+                <span class="text-[11px] font-semibold text-coffee-700 uppercase tracking-wider block mb-1.5">Notas de cata:</span>
+                <div class="flex flex-wrap gap-1.5">
+                  ${notesBadges}
+                </div>
+              </div>
+
+              <!-- Resumen de Preparación y Precio -->
+              <div class="bg-coffee-50 rounded-2xl p-3.5 border border-coffee-200/70 space-y-2 text-xs">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-coffee-700">Método:</span>
+                  <span class="font-semibold text-coffee-950 text-right">${metodoLabel}</span>
+                </div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-coffee-700">Molido ideal:</span>
+                  <span class="font-semibold text-cafetal-700 text-right">${recommendedGrind}</span>
+                </div>
+                <div class="border-t border-coffee-200/80 pt-2.5 flex items-center justify-between gap-2">
+                  <div>
+                    <span class="text-coffee-700 block">Presentación:</span>
+                    <span class="font-semibold text-coffee-950">${presentationLabel}</span>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-lg font-bold text-coffee-950">${priceCRC}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Acción Principal: Redirección directa a WhatsApp -->
+          <div class="space-y-2 pt-1">
+            <a href="${whatsappUrl}" target="_blank" rel="noopener noreferrer"
+              class="w-full py-4 px-5 rounded-2xl bg-whatsapp-500 hover:bg-whatsapp-600 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-lg shadow-whatsapp-500/25 transition flex items-center justify-center gap-2.5">
+              <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/>
+              </svg>
+              <span>Pedir por WhatsApp</span>
+            </a>
+
+            <button onclick="resetFlow()"
+              class="w-full py-2.5 px-4 rounded-xl bg-transparent hover:bg-coffee-200/40 text-coffee-700 hover:text-coffee-950 font-medium text-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              <span>Volver a hacer el test</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Inicializar aplicación
+    window.onload = function () {
+      render();
+    };
+  </script>
+</body>
+</html>
