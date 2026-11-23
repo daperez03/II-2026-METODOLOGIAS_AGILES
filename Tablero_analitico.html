@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tu Café · Tablero analítico (demo Tren 2)</title>
+<style>
+:root{--ink:#1F2937;--muted:#6B7280;--acc:#2F5D7C;--acc2:#4F7F63;--card:#FFFFFF;--bg:#F4F6F8;--line:#E3E7EC;--warn:#9A6A12}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:18px 24px 6px}h1{margin:0;font-size:22px}.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.banner{margin:10px 24px;padding:8px 12px;border-radius:8px;background:#FFF4DD;color:var(--warn);font-size:13px}
+main{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;padding:10px 24px 28px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.k{grid-column:span 3}.k .v{font-size:28px;font-weight:bold;color:var(--acc)}.k .l{color:var(--muted);font-size:13px;margin-top:2px}
+.w8{grid-column:span 8}.w4{grid-column:span 4}.w6{grid-column:span 6}.w12{grid-column:span 12}
+h2{font-size:15px;margin:0 0 10px}
+.row{display:grid;grid-template-columns:180px 1fr 70px;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+.bar{height:22px;background:#E8EEF3;border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--acc)}
+.pct{text-align:right;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}th{font-weight:bold}
+td.n,th.n{text-align:right}
+.goal{height:14px;background:#E8EEF3;border-radius:7px;overflow:hidden;margin:8px 0}.goal i{display:block;height:100%;background:var(--acc2)}
+form{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px}label{display:flex;flex-direction:column;gap:3px;color:var(--muted)}
+input,select{padding:7px;border:1px solid #CBD2D9;border-radius:6px;font-size:13px;color:var(--ink)}
+button{padding:8px 12px;border:0;border-radius:6px;background:var(--acc);color:#fff;font-size:13px;cursor:pointer}
+button.sec{background:#E8EEF3;color:var(--ink)}
+.msg{grid-column:span 2;font-size:12.5px;min-height:16px}.ok{color:var(--acc2)}.err{color:#B42318}
+.codes{font-family:monospace;font-size:12px;color:var(--muted);line-height:1.6}
+@media(max-width:860px){.k{grid-column:span 6}.w8,.w4,.w6{grid-column:span 12}.row{grid-template-columns:120px 1fr 56px}}
+</style></head><body>
+<header><h1>Tu Café · Tablero analítico del Product Owner</h1>
+<div class="sub">Tren 2 · Capa analítica · PMV: embudo del recomendador y bolsas vendidas contra la meta</div></header>
+<div class="banner"><b>Datos simulados para la demostración.</b> No son datos reales de El Carrizal. En producción, los eventos vienen del backend (Tren 3) y las ventas del registro del PO.</div>
+<main>
+ <div class="card k"><div class="v" id="kSes">0</div><div class="l">cuestionarios iniciados</div></div>
+ <div class="card k"><div class="v" id="kConvC">0 %</div><div class="l">completan el cuestionario</div></div>
+ <div class="card k"><div class="v" id="kConvV">0 %</div><div class="l">de las recomendaciones terminan en venta</div></div>
+ <div class="card k"><div class="v" id="kBolsas">0</div><div class="l">bolsas vendidas por el agente</div></div>
+
+ <div class="card w8"><h2>Embudo acumulado</h2><div id="funnel"></div></div>
+ <div class="card w4"><h2>Avance contra la meta anual</h2>
+  <div style="font-size:13px;color:var(--muted)">Meta del PMV: 10 000 bolsas al año (Parte 1)</div>
+  <div class="goal"><i id="goalBar" style="width:0"></i></div>
+  <div style="font-size:13px"><b id="goalTxt">0</b> de la meta lineal a la fecha (<span id="goalExp">0</span> bolsas esperadas en <span id="weeks">0</span> semanas)</div>
+  <div style="margin-top:12px;font-size:13px">Ingreso estimado: <b id="ingreso">₡0</b><br><span style="color:var(--muted)">Supuesto: ₡6 000 por bolsa (precio implícito de la Parte 1, sin confirmar)</span></div>
+  <div style="margin-top:14px;display:flex;gap:8px"><button id="btnWeek">Simular una semana más</button><button class="sec" id="btnReset">Reiniciar</button></div>
+ </div>
+
+ <div class="card w6"><h2>Conversión por café recomendado</h2>
+  <table><thead><tr><th>Café</th><th class="n">Recomendado</th><th class="n">Ventas</th><th class="n">Conversión</th><th class="n">Bolsas</th></tr></thead><tbody id="byCoffee"></tbody></table>
+  <div style="font-size:12px;color:var(--muted);margin-top:8px">Nombres genéricos: el catálogo real lo define el PO. Con menos de 30 recomendaciones la conversión no es confiable (riesgo A4).</div>
+ </div>
+ <div class="card w6"><h2>Registrar una venta (F2)</h2>
+  <form id="f">
+   <label>Código de la recomendación<input id="fCode" placeholder="TC-0000" required></label>
+   <label>Presentación<select id="fPres"><option>340 g grano</option><option>340 g molido</option><option>1 kg grano</option></select></label>
+   <label>Bolsas<input id="fQty" type="number" min="1" max="50" value="1" required></label>
+   <label>&nbsp;<button type="submit">Guardar venta</button></label>
+   <div class="msg" id="fMsg"></div>
+  </form>
+  <div style="font-size:12.5px;margin-top:8px">Códigos recientes sin venta (para probar):</div>
+  <div class="codes" id="codes"></div>
+ </div>
+
+ <div class="card w12"><h2>Últimas ventas registradas</h2>
+  <table><thead><tr><th>Semana</th><th>Código</th><th>Café</th><th>Presentación</th><th class="n">Bolsas</th></tr></thead><tbody id="sales"></tbody></table>
+ </div>
+</main>
+<script>
+const COFFEES=["Café A · tueste claro","Café B · tueste medio","Café C · tueste oscuro","Café D · natural","Café E · honey"];
+const RATES={complete:.62,view:.97,click:.34,buy:.45};
+let seed=7;function rnd(){seed=(seed*16807)%2147483647;return(seed-1)/2147483646}
+let S;
+function reset(){seed=7;S={week:0,ev:{start:0,complete:0,view:0,click:0},recs:[],sales:[],used:new Set()};for(let i=0;i<4;i++)simWeek();render()}
+function code(){let c;do{c="TC-"+String(Math.floor(1000+rnd()*9000))}while(S.recs.some(r=>r.code===c));return c}
+function simWeek(){S.week++;const n=Math.round(35+S.week*4+rnd()*15);
+ for(let i=0;i<n;i++){S.ev.start++;if(rnd()>RATES.complete)continue;S.ev.complete++;if(rnd()>RATES.view)continue;S.ev.view++;
+  const cf=COFFEES[Math.floor(Math.pow(rnd(),1.3)*COFFEES.length)];const r={code:code(),coffee:cf,week:S.week};S.recs.push(r);
+  if(rnd()>RATES.click)continue;S.ev.click++;if(rnd()>RATES.buy)continue;
+  sale(r,["340 g grano","340 g molido","1 kg grano"][Math.floor(rnd()*3)],1+Math.floor(rnd()*3))}}
+function sale(r,pres,q){S.sales.push({week:S.week,code:r.code,coffee:r.coffee,pres,q});S.used.add(r.code)}
+const fmt=n=>n.toLocaleString("es-CR");
+function render(){const e=S.ev,bolsas=S.sales.reduce((a,s)=>a+s.q,0),ns=S.sales.length;
+ kSes.textContent=fmt(e.start);kConvC.textContent=(e.start?Math.round(100*e.complete/e.start):0)+" %";
+ kConvV.textContent=(e.view?(100*ns/e.view).toFixed(1).replace(".",","):"0")+" %";kBolsas.textContent=fmt(bolsas);
+ const steps=[["Cuestionario iniciado",e.start],["Cuestionario completado",e.complete],["Recomendación vista",e.view],["Clic a WhatsApp",e.click],["Venta registrada",ns]];
+ funnel.innerHTML=steps.map(([l,v])=>`<div class="row"><div>${l}</div><div class="bar"><i style="width:${e.start?100*v/e.start:0}%"></i></div><div class="pct">${fmt(v)}</div></div>`).join("");
+ const exp=Math.round(10000*S.week/52);weeks.textContent=S.week;goalExp.textContent=fmt(exp);
+ goalTxt.textContent=(exp?Math.round(100*bolsas/exp):0)+" %";goalBar.style.width=Math.min(100,exp?100*bolsas/exp:0)+"%";
+ ingreso.textContent="₡"+fmt(bolsas*6000);
+ byCoffee.innerHTML=COFFEES.map(c=>{const rec=S.recs.filter(r=>r.coffee===c).length,sl=S.sales.filter(s=>s.coffee===c),b=sl.reduce((a,s)=>a+s.q,0);
+  return`<tr><td>${c}</td><td class="n">${rec}</td><td class="n">${sl.length}</td><td class="n">${rec?(100*sl.length/rec).toFixed(1).replace(".",",")+" %":"–"}</td><td class="n">${b}</td></tr>`}).join("");
+ const free=S.recs.filter(r=>!S.used.has(r.code)).slice(-8).map(r=>r.code);codes.textContent=free.join("  ");
+ sales.innerHTML=S.sales.slice(-8).reverse().map(s=>`<tr><td>${s.week}</td><td>${s.code}</td><td>${s.coffee}</td><td>${s.pres}</td><td class="n">${s.q}</td></tr>`).join("")}
+document.getElementById("f").addEventListener("submit",ev=>{ev.preventDefault();const c=fCode.value.trim().toUpperCase(),q=parseInt(fQty.value,10);
+ const r=S.recs.find(x=>x.code===c);
+ if(!r){fMsg.className="msg err";fMsg.textContent="Ese código no corresponde a ninguna recomendación.";return}
+ if(S.used.has(c)){fMsg.className="msg err";fMsg.textContent="Esa recomendación ya tiene una venta registrada.";return}
+ if(!(q>=1&&q<=50)){fMsg.className="msg err";fMsg.textContent="Indicá entre 1 y 50 bolsas.";return}
+ sale(r,fPres.value,q);fMsg.className="msg ok";fMsg.textContent=`Venta guardada: ${q} bolsa(s) de ${r.coffee}.`;fCode.value="";render()});
+btnWeek.onclick=()=>{simWeek();render()};btnReset.onclick=reset;reset();
+</script></body></html>
